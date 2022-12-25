@@ -1,0 +1,106 @@
+Assignment 21 Dec 2022
+
+Part 1
+Keep part 1 code commented while executing this step 2
+
+1. Create a trigger on object Account 
+   a). Use before insert event
+   b). populate industry= Finance
+   c). populate rating  = Hot
+
+2. Create a List with Strings
+   a). Maruti,Hyundai,Tata,Kia   
+
+3. Create Accounts dynamically with above list using while loop 
+   Account Names with above list
+   Phone = 123456
+
+4. Insert account data and display Accounts
+5. Create another list with String
+   b). Mahindra,Toyota
+6. Add List b) to List a) using addAll method
+7. Use upsert command on newly updated list a) after merge
+
+8. Create contact records with all accounts created with
+   contact LastName = Account Name
+
+8. Check all records Under tabs if all are created or not properly.
+
+Part 2
+Keep part 2 code commented while executing this step 1
+
+1. Soql all the accounts with phone number 123456
+2. delete all accounts/Opportunities we created in first step.
+
+
+
+solution --
+Part 1-
+
+List<String> carName = new list<String> { 'Maruti' , 'Hyundai' , 'Tata','Kia' };
+system.debug(carName);
+//3.creating account and inserted
+List<Account> acclist = new List<Account>();
+integer i=0;
+while(i<carName.size()){
+  Account acc = new Account(
+    Name=carName[i],
+   	Phone='123456'
+    );
+    acclist.add(acc);
+  i++;    
+}
+
+//4.displayed accounts
+insert acclist;
+system.debug(acclist);
+
+//5 create another list 
+List<string> newlist = new List<string>();
+newlist.add('Mahindra');
+newlist.add('Toyota');
+
+//6.adding list2 to list1
+List<Account> newAcc = new List<Account>();
+integer j=0;
+while(j<newlist.size()){
+  Account acc1 = new Account(
+    Name=newlist[j],
+   	Phone='123456'
+    );
+    newAcc.add(acc1);
+  j++;    
+}
+acclist.addAll(newAcc);
+
+//carName.addAll(newlist);
+
+//7.upsert newly created list 
+upsert acclist;
+
+//8.creating contact under Account
+List<Contact> conacc = new List<Contact>();
+for(integer i=0;i<acclist.size();i++){
+    Contact con = new Contact(
+    LastName=acclist[i].Name,
+    AccountId=acclist[i].Id
+    );
+    conacc.add(con);
+}
+insert conacc;
+
+Part-2
+
+1.List<Account> data= new List<Account>[select Id,Name from Account where Phone='123456'];
+  List<Contact> condata = new List<Contact>[select Id,Name,(select LastName from Contact) from Account where Phone='123456'];
+   delete condata;
+   delete data;
+2.List<Account> data= new List<Account>([select Id,Name from Account where Phone='123456']);
+set<Id> conset = new set<Id>();
+for(integer i=1;i<=data.Size()-1;i++){
+    conset.add(data[i].id);
+}
+system.debug(conset);
+List<Contact> confetch = [select Id from Contact where AccountId IN :conset];
+delete confetch;
+

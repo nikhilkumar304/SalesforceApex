@@ -1,0 +1,103 @@
+
+Assignment
+
+1. Create 2 Lists with Strings
+   a). Appcino,Accenture,Tata Consultancy,Wipro
+   b). Banking,Chemicals,Agriculture,Education
+
+2. Create Accounts dynamically with above lists 
+   Account Names with List(a) and Industry with List (b);
+3. Display Accounts
+
+4. Update all accounts with 
+   Rating => 'Hot' If account Industry is Banking
+   Rating => 'Warm' If account Industry is Chemicals
+   Rating => 'Cold' If account Industry is Agriculture
+5. Display Accounts after update
+
+6. Use system assert, assertEquals and assertNotEquals
+
+7. Create contacts dynamically under each of Account with 
+   Contact LastName equals to Account Name
+   Contact FirstName equals to Account Industry Name
+8. Loop through all accounts using 
+   for loop taking i=0 and size
+   
+   Create Opportunities with 
+   Opportunity Name => Account Name
+   Stage Name => prospecting / Qualification (Even/Odd alternate)
+   Close Date => Incremented day value starting from tomorrow
+9. Check all records Under tabs if all are created or not properly.
+
+
+Solution code of Assignment--
+
+//List -1 for Account Name
+List<string> Companies = new List<string>();
+Companies.add('Appcino');
+Companies.add('Accenture');
+Companies.add('Tata Consultancy');
+Companies.add('Wipro');
+system.debug(Companies);
+
+//List-2 for Industry Name
+List<string> Industrylist = new List<string>();
+Industrylist.add('Banking');
+Industrylist.add('Chemicals');
+Industrylist.add('Agriculture');
+Industrylist.add('Education');
+system.debug(Industrylist);
+
+//Account
+List<Account> acclist= new List<Account>();
+for(integer i =0;i<Companies.size();i++)
+{
+	Account newAcc = new Account(Name=Companies[i],Industry=Industrylist[i],phone='9045836690');
+    acclist.add(newAcc);
+}
+insert acclist;
+
+//rating
+for(integer i=0;i<acclist.size();i++){
+    if(acclist[i].Industry =='Banking'){
+        acclist[i].rating='Hot';
+    }else if(acclist[i].Industry =='Chemicals'){
+        acclist[i].rating='Warm';
+    }else if(acclist[i].Industry =='Agriculture'){
+        acclist[i].rating='Cold';
+    }
+}
+update acclist;
+
+//Asserts
+system.Assert(acclist.isEmpty()!=null);
+system.assertEquals(4,acclist.size());
+system.assertNotEquals(4,acclist.size());
+
+//contact
+List<Contact> conacc= new List<Contact>();
+for(integer i=0;i<acclist.size();i++){
+ Contact con = new Contact(
+ LastName=acclist[i].Name,
+ FirstName=acclist[i].Industry,
+ AccountId =acclist[i].Id
+    );
+    conacc.add(con);
+}
+insert conacc;
+
+//opportunity
+List<Opportunity> oppacc = new List<Opportunity>();
+for(integer i=0;i<acclist.size();i++){
+    Opportunity opp = new Opportunity(
+     Name = acclist[i].Name,
+         StageName = 'prospecting/Qualification',
+    CloseDate = Date.today()+i,
+    AccountId =acclist[i].Id
+    );
+oppacc.add(opp);
+}
+insert oppacc;
+update acclist;
+
+

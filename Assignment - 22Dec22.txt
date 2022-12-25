@@ -1,0 +1,63 @@
+Assignment 22 Dec 2022
+
+1. Create a trigger on account
+   a). Use after insert event
+   b). create contacts from accounts
+       LastName = AccountName
+       phone = Account phone
+
+2. Create rollup summary field on account object 
+   Field Name = TotalContacts (It will count total contacts under this account)
+   
+
+3. Write a soql on account to get 10 records order by Name asc
+   a).Assign this soql to Map<Id,Account> 
+   
+4. Get all accounts Ids in a set using keysets() from Map
+   a). Create a set with all account Ids
+
+5. Get all accounts records in a list using values()
+   a). Create a list of String with name LstAccountNames
+   b). Create a Boolean variable DuplicateFound
+   c). Loop through all account records 
+   d). Add all account name to list LstAccountNames;
+   e). Check if duplicate account name found or not. If found assign true to variable DuplicateFound
+       and print after the loop
+
+solution--
+//3.soql fetching 10 accounts  assigning it to Map
+Map<Id, Account> accountMap = new Map<Id, Account>([select id, Name from Account order by Name asc limit 10]);
+system.debug(accountMap);
+//4.creating a set with Id of accounts
+set<Id>Ids = new set<Id>();
+Ids=accountMap.keySet();
+system.debug(Ids);
+//5  record in a list
+//a,e).Create a list of String with name LstAccountNames
+List<Account> LstAccount= new List<Account>();
+ lstAccount=accountMap.values();
+List<string> LstAccountNames = new List<string>();
+for(integer i=0;i<LstAccount.Size();i++){
+    LstAccountNames.add(LstAccount[i].Name);
+}
+system.debug(LstAccountNames);
+//b.Create a Boolean variable DuplicateFound
+boolean duplicate=false;
+string prevname=LstAccountNames[0];
+for(integer i=1;i<LstAccountNames.Size();i++){
+   if(prevname==LstAccountNames[i]){
+        duplicate=true;
+        break;
+    }
+    else{
+        duplicate=false;
+        prevname=LstAccountNames[i];
+    }
+}
+
+system.debug(duplicate);
+
+
+
+
+

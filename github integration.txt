@@ -1,0 +1,299 @@
+public with sharing class githubIntegrationComp {
+        @AuraEnabled
+        public static string searchUser(string SearchValue){
+            try {
+                Http h = new Http();
+        
+                // Instantiate a new HTTP request, specify the method (GET) as well as the endpoint
+               HttpRequest req = new HttpRequest();
+               req.setTimeout(120000);
+               req.setMethod('GET');
+               req.setHeader('client_id','4efbba46c23bda3231c9');
+               req.setHeader('client_secret','c481f4450bb79f6a586f6565434e6a089a7ad204');
+               req.setEndPoint('https://api.github.com/search/users?q='+SearchValue+'&client_id=4efbba46c23bda3231c9&client_secret=c481f4450bb79f6a586f6565434e6a089a7ad204&per_page=10');
+               
+               HttpResponse res = new HttpResponse();
+                res = h.send(req);
+                return res.getBody();
+                
+            } catch (Exception e) {
+                throw new AuraHandledException(e.getMessage());
+            }
+        }
+        @AuraEnabled
+        public static string getUserDetails(string login){
+            try {
+                Http h = new Http();
+        
+                // Instantiate a new HTTP request, specify the method (GET) as well as the endpoint
+               HttpRequest req = new HttpRequest();
+               req.setTimeout(120000);
+               req.setMethod('GET');
+               req.setHeader('client_id','4efbba46c23bda3231c9');
+               req.setHeader('client_secret','c481f4450bb79f6a586f6565434e6a089a7ad204');
+               req.setEndPoint('https://api.github.com/users/'+login+'');
+               
+               HttpResponse res = new HttpResponse();
+                res = h.send(req);
+                return res.getBody();
+                
+            } catch (Exception e) {
+                throw new AuraHandledException(e.getMessage());
+            }
+        }
+        @AuraEnabled
+        public static string getUserRepos(string login){
+            try {
+                Http h = new Http();
+        
+                // Instantiate a new HTTP request, specify the method (GET) as well as the endpoint
+               HttpRequest req = new HttpRequest();
+               req.setTimeout(120000);
+               req.setMethod('GET');
+               req.setHeader('client_id','4efbba46c23bda3231c9');
+               req.setHeader('client_secret','c481f4450bb79f6a586f6565434e6a089a7ad204');
+               req.setEndPoint('https://api.github.com/users/'+login+'/repos');
+               
+               HttpResponse res = new HttpResponse();
+                res = h.send(req);
+                return res.getBody();
+                
+            } catch (Exception e) {
+                throw new AuraHandledException(e.getMessage());
+            }
+        }
+          
+}
+
+-----------------------------------------------------------------------------
+<template>
+    <lightning-card>
+        <div class="slds-var-p-around_medium slds-text-align_center slds-text-heading_large" style="background-color:blueviolet;">
+            Github Search
+        </div> 
+        <div class="slds-grid">
+            <div class="slds-col slds-size_1-of-2 slds-var-p-around_small">
+                <lightning-input padding="around_medium" value={searchInput} type="search" onchange={handleChange}></lightning-input>
+            </div> 
+            <div class="slds-col slds-size_1-of-2 slds-var-p-around_small slds-m-top_large">
+                <lightning-button variant="brand" label="Search"  onclick={handleSearch}></lightning-button>
+            </div>
+        </div>
+        <template if:true={userExist}>
+            <div class="slds-scrollable" style="height:300px; width:100%;">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example Default Base table">
+                    <thead>
+                        <tr>
+                            <th>Profile Image</th>
+                            <th>Id</th>
+                            <th>UserName</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={users} for:item="user">
+                            <tr key={user.id}>
+                                <td data-label="Image">
+                                 <span class="slds-avatar slds-avatar_circle">
+                                    <span class="slds-icon_container slds-icon-standard-user" title="Profile Image">
+                                        <img class="slds-icon" src={user.avatar_url} style="width:100px;" alt="Profile Image">
+                                        <span class="slds-assistive-text">Profile Image</span>
+                                    </span>
+                                 </span>     
+                                </td>
+                                <td>{user.id}</td>
+                                <td>{user.login}</td>
+                                <td>
+                                    <lightning-button label="Details" onclick={handleDetails} name={user.id} value={user.id} variant="brand"></lightning-button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+         </div>
+        </template>
+    </lightning-card>
+</template>
+-----------------------------------------------------------------------------------------------------------------
+js search
+
+import { LightningElement, track, wire } from 'lwc';
+import Searchuser from '@salesforce/apex/githubIntegrationComp.searchUser';
+import lmsGithub from '@salesforce/messageChannel/LmbGithub__c';
+import { MessageContext,publish } from 'lightning/messageService';
+export default class GithubSearchComp extends LightningElement {
+    @wire (MessageContext) context;
+   @track users;
+    searchInput;
+
+    // get userExist(){
+    //     if(users.length > 0) return true 
+    //     else return false;
+    // }
+    userExist=true;
+    handleChange(event){
+        this.searchInput=event.target.value;
+    }
+    handleSearch(){
+        console.log("button clicked");
+        Searchuser({SearchValue:this.searchInput})
+        .then(result=>{
+            let objresult=JSON.parse(result);
+            this.users = objresult.items;
+          console.log("data"+this.users);  
+        })
+        .catch(error =>{
+            console.log('error accoured'+JSON.stringify(error));
+        })   
+    }
+    handleDetails(e){
+       const message = {
+        user:this.users.filter(u=> u.id === e.target.value)[0]
+        }
+        publish(this.context,lmsGithub,message);
+    }
+    
+}
+           
+----------------------------------------------------------------------------------------------------------------------------------------
+<template>
+    <lightning-card>
+        <div class="slds-var-p-around_medium slds-text-align_center slds-text-heading_large" style="background-color:blueviolet; color:white;">
+           Github Details
+        </div> 
+        <template if:true={user}>
+            <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-media">
+                            <div class="slds-media__figure"> 
+                            </div>
+                            <div class="slds-media__body">
+                                <div class="slds-page-header__name">
+                                    <div class="slds-page-header__name-title">
+                                        <h1>
+                                            <span class="slds-page-header__title slds-truncate" title={user.login}>
+                                                <a target="_blank" href={user.html_url}>{user.login}</a>
+                                            </span>
+                                        </h1>
+                                    </div>
+                                </div>
+                                <div class="slds-page-header__name-meta">
+                                    <div class="slds-grid">
+                                        <div class="slds-col slds-test-align_left">
+                                            Github Id : {user.id}
+                                        </div>
+                                        <div class="slds-col slds-test-align_right">
+                                        Joining Date: {user.created_at}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-3 slds-var-p-around_medium">
+                    <span class="slds-avatar slds-avatar_circle slds-avatar_large" style="height:200px;width:200px">
+                        <img alt={user.login} src={user.avatar_url} title={user.login}/>
+                    </span>
+                </div>
+                <div class="slds-col slds-size_2-of-3 slds-var-p-top_large slds var-p-around_medium">
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-around_medium">
+                            <span class="slds-badge slds-badge_inverse">public Repos : {user.public_repos}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-around_medium">
+                            <span class="slds-badge slds-theme_success">public Gists : {user.public_gists}</span>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-around_medium">
+                            <span class="slds-badge slds-theme_warning">Followers: {user.followers}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-around_medium">
+                            <span class="slds-badge slds-theme_error">Following: {user.following}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </template>
+         <template if:true={reposExist}>
+            <template for:each={repos} for:item="repo">
+                
+                    <div key={repo.id} class="slds-grid slds-box slds-theme_shade_alert-texture slds-var-m-around_xx-small">
+                        <div class="slds-col slds-size_1-of-4 slds-var-p-around_xx-small">
+                            <b>{repo.name}</b>                            
+                        </div>
+                        <div class="slds-col slds-size_2-of-4 slds-var-p-around_xx-small">
+                            <span class="slds-badge slds-theme_success">Forks: {repo.forks_count}</span>
+                            <span class="slds-badge slds-theme_warning">Watchers: {repo.watchers_count}</span>
+                            <span class="slds-badge slds-theme_error">Stars: {repo.stargazers_count}</span>
+                        </div>
+                        <div class="slds-col slds-size_1-of-4 slds-var-p-around_xx-small">
+                            <a href={repo.html_url} target="_blank" class="slds-button slds-button_brand">View Repository</a>
+                        </div>
+                    </div>
+               
+            </template>
+          
+         </template>
+    </lightning-card>  
+</template>
+-----------------------------------------------------------------------------
+js file
+
+import { LightningElement, wire,track } from 'lwc';
+import lmsGithub from '@salesforce/messageChannel/LmbGithub__c';
+import getUserRepos from '@salesforce/apex/githubIntegrationComp.getUserRepos';
+import getUserDetails from '@salesforce/apex/githubIntegrationComp.getUserDetails';
+import { MessageContext,subscribe ,unsubscribe,APPLICATION_SCOPE} from 'lightning/messageService';
+export default class GithubDetailComp extends LightningElement {
+   
+    @wire (MessageContext) context;
+    subscription;
+    @track user;
+    @track repos=[];
+
+    get reposExist(){
+        return this.repos.length>0?true:false;
+    }
+
+    connectedCallback(){
+        this.subscriptionMessageChannel();
+    }
+    subscriptionMessageChannel(){
+        if(this.subscription){
+            return;
+        }
+        subscribe(this.context,lmsGithub,(message) =>{
+           // alert(JSON.stringify(message.user));
+            this.fetchUser(message.user.login);
+        },{scope:APPLICATION_SCOPE});
+    }
+    async fetchUser(login){
+
+       await getUserDetails({login})
+        .then(result =>{
+            // alert(JSON.stringify(result));
+            let obj= JSON.parse(result);
+            this.user=obj;
+            console.log('data of user'+this.user.login);
+        })
+        .catch(error => alert('error'+JSON.stringify(error)))
+
+       await getUserRepos({login})
+        .then(result =>{
+            console.log('entered');
+            if(result){
+                let obj= JSON.parse(result).slice(0,5);
+                this.repos=obj;
+                console.log(JSON.stringify(this.repos));
+            }  
+        })
+        .catch(error => alert('error'+JSON.stringify(error)))
+
+       
+    }
+}                                                                                                                                                                                                    

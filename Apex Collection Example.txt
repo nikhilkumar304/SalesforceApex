@@ -1,0 +1,68 @@
+//set
+set<string> objectname =new set<string>();
+objectname.add('Red');
+objectname.add('white');
+objectname.add('blue');
+objectname.add('Red');
+system.debug(objectname);
+
+//map
+map<string,string> mapobj= new map<string,string>();
+//for clone
+map<string,string> mapobj1= new map<string,string>();
+
+mapobj.put('india','+91');
+mapobj.put('afganishtan','+93');
+mapobj.put('china','+86');
+mapobj.put('pakistan','+91');
+system.debug(mapobj);
+//clone
+mapobj1=mapobj.clone();
+//get
+system.debug(mapobj.get('india'));
+//containskey
+system.debug(mapobj.containskey('afghanistan'));
+//equals
+system.debug(mapobj.equals(mapobj1));
+//hashcode
+system.debug(mapobj.hashcode());
+//isEmpty
+system.debug(mapobj.isEmpty());
+//keySet
+system.debug(mapobj.keySet());
+//values
+system.debug(mapobj.values());
+//size
+system.debug(mapobj1.size());
+//remove(key)
+system.debug(mapobj1.remove('pakistan'));
+
+//list
+List<string> lobj= new List<string>();
+lobj.add('india');
+lobj.add('pakistan');
+lobj.add('china');
+system.debug(lobj)
+
+
+// SOQL 
+1).select Name from Account- returns the name of accounts
+2).select Name,Id from Account- returns the name,Id of accounts
+3).select Name,Id,Industry from Account- returns the name,Id,Injustry of accounts.
+4).select AccountNumber,AnnualRevenue,Description,Rating from Account where Rating='hot' order by Name
+5).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where Name like '%t%' order by Name
+6).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where Rating <> null.
+     Or
+   select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where NOT Rating= null.
+
+7).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where Rating != null.
+8).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where AnnualRevenue<50000000.
+9).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where AnnualRevenue>=48000000.
+10).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where AccountNumber like 'CD%' AND Rating = 'hot'
+11).select Name,AccountNumber,AnnualRevenue,Description,Rating from Account where AccountNumber like 'CD%' OR Rating = 'hot'.
+12).select Name,NumberOfConvertedLeads,NumberOfOpportunities,IsActive,OwnerId from campaign
+13).select Name ,(select contact.Name from contacts) from Account.
+14).select count(Name) from Account.
+15).
+
+

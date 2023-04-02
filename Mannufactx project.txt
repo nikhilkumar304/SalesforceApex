@@ -1,0 +1,578 @@
+    @AuraEnabled(cacheable=true)
+    public static List<Account> getAccount(Integer offSetCount) {
+        integer limits = offSetCount;
+        return [SELECT Id, Name, Type,BillingCountry, AnnualRevenue, Industry, Phone from Account LIMIT :limits];    
+    }
+    @AuraEnabled(cacheable=true)
+    public static List<contact> getContact() {
+        return [SELECT Id, LastName,FirstName, Phone from contact];    
+    }
+    @AuraEnabled(cacheable=true)
+    public static List<Opportunity> getOpportunity() {
+        return [SELECT Id,Name,StageName,CloseDate from Opportunity];    
+    } 
+@AuraEnabled(cacheable=true)
+    public static List<Account> data_tabset_Account(String NameAcc, String TypeAcc, String AccPhone ,String bilingAcc){
+    String nameKey = '\''+NameAcc+'%\'';
+    String typeKey=  '\''+TypeAcc+'%\'';
+    String bilingKey = '\''+bilingAcc+'%\'';
+    string Phonekey ='\''+AccPhone+'%\''; 
+    string querylist = 'select id,Name,Phone,Type,BillingCountry from Account where '; 
+    if(NameAcc=='' & TypeAcc==''){
+        querylist +='Phone like'+Phonekey+'AND BillingCountry like '+bilingKey+'';
+    }else if(NameAcc=='' & AccPhone==''){
+        querylist +='Type like '+typeKey+'AND BillingCountry like '+bilingKey+''; 
+    }else if(NameAcc=='' & bilingAcc=='' ){
+        querylist += 'Phone like'+Phonekey+'AND Type like '+typeKey+'';
+    }
+    else if(TypeAcc=='' & AccPhone==''){
+        querylist += 'Name like '+nameKey+'AND BillingCountry like '+bilingKey+'';
+    }else if(TypeAcc=='' & bilingAcc==''){
+        querylist += 'Name like '+nameKey+'AND Phone like'+Phonekey+'';
+    }else if(AccPhone=='' & bilingAcc==''){
+        querylist += 'Name like '+nameKey+'AND AND Type like '+typeKey+'';
+    }else if(NameAcc=='' & TypeAcc=='' & AccPhone==''){
+        querylist += 'BillingCountry like '+bilingKey+'';
+    }else if(TypeAcc=='' & AccPhone=='' & bilingAcc==''){
+        querylist += 'Name like '+nameKey+'';
+    }else if(NameAcc=='' & AccPhone=='' & bilingAcc=='' ){
+        querylist += 'Type like '+typeKey+'';
+    }
+    system.debug(querylist);
+    List<Account> newAccount = Database.query(querylist);
+    system.debug(newAccount);
+    return newAccount;        
+    }
+    @AuraEnabled(cacheable=true)
+    public static List<Contact> data_tabset_Contact(String FirstName, String LastName, String ConPhone ){
+    String FnameKey = '\''+FirstName+'%\'';
+    String LnameKey=  '\''+LastName+'%\'';
+    string Phonekey ='\''+ConPhone+'%\'';  
+    string querylist = 'select id,FirstName,LastName,Phone from Contact where ';
+    if(FirstName=='' & LastName==''){
+        querylist += 'Phone like'+Phonekey+'';
+    }else if(FirstName==''& ConPhone==''){
+        querylist += 'LastName like '+LnameKey+'';
+    }else if(LastName==''& ConPhone==''){
+        querylist += 'FirstName like '+FnameKey+'';
+    }else if(FirstName==''){
+        querylist += 'LastName like '+LnameKey+'AND Phone like'+Phonekey+'';
+    }else if(LastName==''){
+        querylist += 'FirstName like '+FnameKey+'AND Phone like'+Phonekey+'';
+    }else if(ConPhone==''){
+        querylist += 'FirstName like '+FnameKey+'AND LastName like '+LnameKey+'';
+    }
+    system.debug(querylist);
+    List<Contact> newContact = Database.query(querylist);
+    system.debug(newContact);
+    return newContact;        
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Opportunity> data_tabset_Opportunity(String Name, String StageName,string CloseDate ){
+    String nameKey = '\''+Name+'%\'';
+    String stageNameKey=  '\''+StageName+'%\'';
+    string Datekey ='\''+CloseDate+'%\'';  
+    string querylist = 'select id,Name,StageName,CloseDate from Opportunity where ';
+    if(Name==''& StageName=='')
+    {
+        querylist += 'CloseDate like'+Datekey+'';
+    }else if(Name==''& CloseDate=='')
+    {
+        querylist += 'StageName like '+stageNameKey+'';
+    }else if(StageName==''&CloseDate=='')
+    {
+        querylist += 'Name like '+nameKey+'';
+    }else if(Name=='')
+    {
+        querylist += 'StageName like '+stageNameKey+' AND CloseDate like'+Datekey+'';
+    }else if(StageName=='')
+    {
+        querylist += 'Name like '+nameKey+' AND CloseDate like'+Datekey+'';
+    }
+    else if(CloseDate=='')
+    {
+        querylist += 'Name like '+nameKey+'AND StageName like '+stageNameKey+'';
+    }
+    system.debug(querylist);
+    List<Opportunity> newOpportunity = Database.query(querylist);
+    system.debug(newOpportunity);
+    return newOpportunity;        
+    }
+-------------------------------------------------------
+<template>
+     <!--this is Account tab -->
+    <lightning-tabset variant="scoped">
+        <lightning-tab label="Account" icon-name="standard:account">
+            <lightning-card title="Accounts" icon-name="standard:account">
+                <div class="slds-m-around_medium">
+                    <lightning-layout>
+                        <lightning-layout-item size="4" padding="around-small">
+                            <lightning-input type="search" label="Search Accounts" onchange={searchAccount}></lightning-input>  
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <lightning-layout multiple-rows>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter Name" value={AccountName} onchange={handleSearch}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter Type" value={AccountType} onchange={handleSearchType}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter Phone" value={AccountPhone} onchange={handleSearchPhone}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter BillingCity" value={AccountBillingCountry} onchange={handleSearchBillingCity}></lightning-input>  
+                        </lightning-layout-item>
+                        
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button class="slds-m-left_x-large" label="Apply Filter" variant="brand" onclick={ApplyFilterAcc}></lightning-button>
+                            </div>                 
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button   label="Clear Filter" variant="brand" onclick={clearFilterAcc}></lightning-button>
+                            </div>                         
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <template if:true={dataAccount}>  
+                        <div class="slds-box" style="height: 260px;">
+                            <lightning-datatable key-field="Id" data={dataAccount} columns={columns} load-more-offset="20"
+                                onloadmore={handleLoadMore} enable-infinite-loading  show-row-number-column="true">
+                            </lightning-datatable>
+                        </div>  
+                        {loadMoreStatus}                 
+                    </template>
+                    <template if:true={error}>
+                        {error}
+                    </template>
+                </div>
+            </lightning-card>
+        </lightning-tab>
+        <!--this is contact tab -->
+        <lightning-tab label="Contact" icon-name="standard:contact">
+            <lightning-card title="Contacts" icon-name="standard:contact">
+                <div class="slds-m-around_medium">
+                    <lightning-layout>
+                        <lightning-layout-item size="4" padding="around-small">
+                            <lightning-input type="search" label="Search Contacts" onchange={searchContact}></lightning-input>  
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <lightning-layout multiple-rows>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter FirstName" value={ContactFirstName} onchange={handleSearchContact}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter LastName" value={ContactLastName} onchange={handleSearchContactLast}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter Phone" value={ContactPhone} onchange={handleSearchContactPhone}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button class="slds-m-left_xx-large" label="Apply Filter" variant="brand" onclick={ApplyFilterCon}></lightning-button>
+                            </div>                 
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button  label="Clear Filter" variant="brand" onclick={clearFilterCon}></lightning-button>
+                            </div>                         
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <template if:true={dataContact}>
+                        <div class="slds-scrollable--y" style="height:400px">
+                            <lightning-datatable key-field="Id" data={dataContact} columns={columnsContact} 
+                            show-row-number-column="true" onrowaction={handleRowActionContact}>
+                            </lightning-datatable>
+                        </div>                     
+                    </template>
+                    <template if:true={error}>
+                        {error}
+                    </template>
+                </div>
+            </lightning-card>
+        </lightning-tab>
+         <!--this is opportunity tab -->
+        <lightning-tab label="Opportunities" icon-name="standard:opportunity">
+            <lightning-card title="Opportunity" icon-name="standard:opportunity">
+                <div class="slds-m-around_medium">
+                    <lightning-layout>
+                        <lightning-layout-item size="4" padding="around-small">
+                            <lightning-input type="search" label="Search Opportunity" onchange={searchOpportunity}></lightning-input>  
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <lightning-layout multiple-rows>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter Name" value={OpportunityName} onchange={handleSearchOpportunity}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter StageName" value={OpportunityStageName} onchange={handleSearchOpportunityStageName}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-input type="search" label="Enter CloseDate" value={OpportunityCloseDate} onchange={handleSearchOpportunityDate}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button class="slds-m-left_xx-large" label="Apply Filter" variant="brand" onclick={ApplyFilterOpp}></lightning-button>
+                            </div>                 
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" padding="around-small">
+                            <div class="slds-p-top_large">
+                                <lightning-button  label="Clear Filter" variant="brand" onclick={clearFilterOpp}></lightning-button>
+                            </div>                         
+                        </lightning-layout-item>
+                    </lightning-layout>
+                    <template if:true={dataOpp}>
+                        <div class="slds-scrollable--y" style="height:400px">
+                            <lightning-datatable key-field="Id" data={dataOpp} columns={columnsOpp} 
+                            show-row-number-column="true" onrowaction={handleRowActionContact}>
+                            </lightning-datatable>
+                        </div>                     
+                    </template>
+                    <template if:true={error}>
+                        {error}
+                    </template>
+                </div>
+            </lightning-card>
+        </lightning-tab>
+    </lightning-tabset>
+</template>
+
+-------js--------------------------------------
+import { LightningElement, wire, track } from 'lwc';
+import getAccount from '@salesforce/apex/AccountController.getAccount';
+import getContact from '@salesforce/apex/AccountController.getContact';
+import getOpportunity from '@salesforce/apex/AccountController.getOpportunity';
+import data_tabset_Account from '@salesforce/apex/customListController.data_tabset_Account';
+import data_tabset_Contact from '@salesforce/apex/customListController.data_tabset_Contact';
+import data_tabset_Opportunity from '@salesforce/apex/customListController.data_tabset_Opportunity';
+
+const columns = [
+    { label: 'Name', fieldName: 'Name' },
+    { label: 'Type', fieldName: 'Type' },
+    { label: 'Phone', fieldName: 'Phone' },
+    { label: 'BillingCountry', fieldName: 'BillingCountry' },
+];
+const columnsContact = [
+    { label: 'FirstName', fieldName: 'FirstName' },
+    { label: 'LastName', fieldName: 'LastName' },
+    { label: 'Phone', fieldName: 'Phone' },
+];
+const columnsOpportunity = [
+    { label: 'Name', fieldName: 'Name' },
+    { label: 'StageName', fieldName: 'StageName' },
+    { label: 'CloseDate', fieldName: 'CloseDate' },
+];
+export default class ManuFactsx extends LightningElement {
+    @track dataAccount;
+    @track error;
+    @track columns = columns;
+    @track searchStringAc;
+    @track initialRecordsAc;
+
+    @track dataContact;
+    @track searchStringCo;
+    @track initialRecordsco;
+    @track columnsContact = columnsContact;
+
+    @track dataOpp;  
+    @track columnsOpp =columnsOpportunity;
+    @track searchStringOp;
+    @track initialRecordsOp;
+    
+     AccountName='';
+     AccountType='';
+     AccountPhone='';
+     AccountBillingCountry='';
+
+     ContactLastName='';
+     ContactFirstName='';
+     ContactPhone='';
+    
+     OpportunityName='';
+     OpportunityStageName='';
+     OpportunityCloseDate='';
+
+    totalNumberOfRows =36; 
+    offSetCount = 10;
+    loadMoreStatus;
+    targetDatatable; 
+
+    // @wire(getAccount)
+    // wiredAccount({ error, data }) {
+    //     if (data) {
+    //         console.log(data);
+    //         this.dataAccount = data;
+    //         this.initialRecordsAc = data;
+    //         this.error = undefined;
+    //     } else if (error) {
+    //         this.error = error;
+    //         this.dataAccount = undefined;
+    //     }
+    // }
+    connectedCallback(){
+        this.getRecords();
+        console.log('1');
+    }
+    getRecords() {
+        getAccount({offSetCount : this.offSetCount})
+            .then(result => {
+                // Returned result if from sobject and can't be extended so objectifying the result to make it extensible
+                result = JSON.parse(JSON.stringify(result));
+                console.log('result length'+result.length);
+                //this.totalNumberOfRows=result.length;
+                result.forEach(record => {
+                    record.linkAccount = '/' + record.Id;
+                });
+                this.dataAccount = result;
+                this.initialRecordsAc = result;
+                this.dataAccount = [...this.dataAccount];
+                this.error = undefined;
+                this.loadMoreStatus = '';
+                console.log("target"+this.targetDatatable);
+                if (this.targetDatatable && this.dataAccount.length >= this.totalNumberOfRows) {
+                    //stop Infinite Loading when threshold is reached
+                    console.log('3');
+                    this.targetDatatable.enableInfiniteLoading = false;
+                    //Display "No more data to load" when threshold is reached
+                    this.loadMoreStatus = 'No more data to load';
+                }
+                //Disable a spinner to signal that data has been loaded
+                if (this.targetDatatable) this.targetDatatable.isLoading = false;
+            })
+            .catch(error => {
+                this.error = error;
+                this.dataAccount = undefined;
+                console.log('error : ' + JSON.stringify(this.error));
+            });
+    }
+    handleLoadMore(event) {
+        event.preventDefault();
+        console.log('2');
+        // increase the offset count by 20 on every loadmore event
+        this.offSetCount = this.offSetCount + 10;
+        //Display a spinner to signal that data is being loaded
+        event.target.isLoading = true;
+        //Set the onloadmore event taraget to make it visible to imperative call response to apex.
+        this.targetDatatable = event.target;
+        //Display "Loading" when more data is being loaded
+        this.loadMoreStatus = 'Loading';
+        // Get new set of records and append to this.data
+        //console.log('offset'+this.offSetCount);
+       this.getRecords();
+    }
+
+    @wire(getContact)
+    wiredContact({ error, data }) {
+        if (data) {
+            console.log(data);
+            this.dataContact = data;
+            this.initialRecordsco = data;
+            this.error = undefined;
+        } else if (error) {
+            this.error = error;
+            this.dataContact = undefined;
+        }
+    }
+    @wire(getOpportunity)
+    wiredOpportunity({ error, data }) {
+        if (data) {
+            console.log(data);
+            this.dataOpp = data;
+            this.initialRecordsOp = data;
+            this.error = undefined;
+        } else if (error) {
+            this.error = error;
+            this.dataOpp = undefined;
+        }
+    }
+    searchAccount(event){
+            const searchKey = event.target.value.toLowerCase();
+            if (searchKey) {
+                this.dataAccount = this.initialRecordsAc;    
+                if (this.dataAccount) {
+                    let searchRecords = [];    
+                    for (let record of this.dataAccount) {
+                        let valuesArray = Object.values(record);    
+                        for (let val of valuesArray) {
+                            console.log('val is ' + val);
+                            let strVal = String(val);
+                            if (strVal) {
+                                if (strVal.toLowerCase().includes(searchKey)) {
+                                    searchRecords.push(record);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    console.log('Matched Accounts are ' + JSON.stringify(searchRecords));
+                    this.dataAccount = searchRecords;
+                }
+            } else {
+                this.dataAccount = this.initialRecordsAc;
+            }
+    }
+    searchContact(event){
+            const searchKey = event.target.value.toLowerCase();
+            if (searchKey) {
+                this.dataContact = this.initialRecordsco;    
+                if (this.dataContact) {
+                    let searchRecords = [];    
+                    for (let record of this.dataContact) {
+                        let valuesArray = Object.values(record);    
+                        for (let val of valuesArray) {
+                            console.log('val is ' + val);
+                            let strVal = String(val);
+                            if (strVal) {
+                                if (strVal.toLowerCase().includes(searchKey)) {
+                                    searchRecords.push(record);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    console.log('Matched Contacts are ' + JSON.stringify(searchRecords));
+                    this.dataContact = searchRecords;
+                }
+            } else {
+                this.dataContact = this.initialRecordsco;
+            }
+    }
+    searchOpportunity(event){
+        const searchKey = event.target.value.toLowerCase();
+        if (searchKey) {
+            this.dataOpp = this.initialRecordsOp;    
+            if (this.dataOpp) {
+                let searchRecords = [];    
+                for (let record of this.dataOpp) {
+                    let valuesArray = Object.values(record);    
+                    for (let val of valuesArray) {
+                        console.log('val is ' + val);
+                        let strVal = String(val);
+                        if (strVal) {
+                            if (strVal.toLowerCase().includes(searchKey)) {
+                                searchRecords.push(record);
+                                break;
+                            }
+                        }
+                    }
+                }
+                console.log('Matched Contacts are ' + JSON.stringify(searchRecords));
+                this.dataOpp = searchRecords;
+            }
+        } else {
+            this.dataOpp = this.initialRecordsOp;
+        }
+    }
+    handleSearch(event) {
+        this.AccountName = event.target.value;    
+    }
+    handleSearchPhone(event) {
+        this.AccountPhone=event.target.value;
+    }
+    handleSearchType(event) {
+        this.AccountType=event.target.value;    
+    }
+    handleSearchBillingCity(event) {
+        this.AccountBillingCountry=event.target.value;
+    }
+    handleSearchContact(event) {
+        this.ContactFirstName=event.target.value;
+    }
+    handleSearchContactPhone(event) {
+        this.ContactPhone=event.target.value;
+    }
+    handleSearchContactLast(event) {
+        this.ContactLastName=event.target.value;
+    }
+    handleSearchOpportunity(event) {
+        this.OpportunityName=event.target.value;
+    }
+    handleSearchOpportunityStageName(event) {
+        this.OpportunityStageName=event.target.value;
+    }
+    handleSearchOpportunityDate(event) {
+        this.OpportunityCloseDate= event.target.value;
+    }
+    ApplyFilterAcc(){
+        console.log('name'+this.AccountName);
+        console.log('name'+this.AccountType);
+        console.log('name'+this.AccountPhone);
+        console.log('name'+this.AccountBillingCountry);
+        if(this.AccountName==undefined & this.AccountType==undefined & this.AccountPhone==undefined & this.AccountBillingCountry==undefined){
+            alert('Atleast enter a value .....');
+        }else{
+            data_tabset_Account({NameAcc: this.AccountName,TypeAcc:this.AccountType,AccPhone:this.AccountPhone,bilingAcc:this.AccountBillingCountry})
+            .then(result=>{
+              console.log('result'+JSON.stringify(result));
+              this.dataAccount=result;
+            })
+            .catch(error=>{
+                console.log('error'+JSON.stringify(error));
+            });
+        }
+       
+    }
+    ApplyFilterCon(){
+        console.log('first name'+this.ContactFirstName);
+        console.log(' Last name'+this.ContactLastName);
+        console.log('phone'+this.ContactPhone);
+        if(this.ContactFirstName==undefined & this.ContactLastName==undefined & this.ContactPhone==undefined){
+            alert('Atleast enter a value.....');
+            cons
+        }else{
+            data_tabset_Contact({FirstName:this.ContactFirstName,LastName:this.ContactLastName,ConPhone:this.ContactPhone})
+            .then(result=>{
+              console.log('result'+JSON.stringify(result));
+              this.dataContact=result;
+            })
+            .catch(error=>{
+                console.log('error'+JSON.stringify(error));
+            });
+        }
+       
+    }
+    ApplyFilterOpp(){
+        console.log('name'+this.OpportunityName);
+        console.log('stagename'+this.OpportunityStageName);
+        console.log('date'+this.OpportunityCloseDate);
+        if(this.OpportunityName==undefined & this.OpportunityStageName==undefined & this.OpportunityCloseDate==undefined){
+            alert('Atleast enter a value.....');
+        }else{
+            data_tabset_Opportunity({Name: this.OpportunityName,StageName:this.OpportunityStageName,CloseDate:this.OpportunityCloseDate})
+        .then(result=>{
+          console.log('result'+JSON.stringify(result));
+          this.dataOpp=result;
+        })
+        .catch(error=>{
+            console.log('error'+JSON.stringify(error));
+        });
+        }
+        
+    }
+    clearFilterAcc(){
+    this.AccountName='';
+    this.AccountType='';
+    this.AccountPhone='';
+    this.AccountBillingCountry='';
+    this.dataAccount=this.initialRecordsAc;
+    }
+    clearFilterCon(){
+    this.ContactFirstName='';
+    this.ContactLastName='';
+    this.ContactPhone='';
+    this.dataContact=this.initialRecordsco;
+    }
+    clearFilterOpp(){
+    this.OpportunityName='';
+    this.OpportunityStageName='';
+    this.OpportunityCloseDate='';
+    this.dataOpp=this.initialRecordsOp;
+    }
+    
+}

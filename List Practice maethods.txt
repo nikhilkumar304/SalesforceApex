@@ -1,0 +1,76 @@
+//List-1
+List<string> acclist = new List<string>();
+acclist.add('nikhil');//add()
+acclist.add('Aniket');
+acclist.add('sahil');
+acclist.add('Prerit');
+
+//List-2
+List<string> acclist1 = new List<string>();
+acclist1.add('Kaptaan');
+acclist1.add('Prakhar');
+acclist1.add('Saksham');
+acclist1.add('Vikas');
+
+system.debug('size of list-1:'+acclist.size());//size()
+system.debug('size of list-2:'+acclist1.size());..size()
+system.debug(acclist);
+system.debug(acclist1);
+
+//after adding second list1 to list
+acclist.addAll(acclist1);//addAll()
+system.debug('concatenated list'+acclist);
+
+//clear()
+//acclist.clear();
+system.debug('after clearing the list-1'+acclist);
+
+//acclist.retainAll(acclist);
+//system.debug('retaining all elements of list-1'+acclist);
+
+// contains method
+system.debug('nikhil is contained by acclist:'+acclist.contains('nikhil'));
+
+//get()
+system.debug(acclist.get(2));
+
+//equals
+sytem.debug(acclist.equals(acclist1));// returns true 
+
+//set()
+acclist.set(2,'arjun');
+system.debug(acclist);
+
+
+//map
+List<Account> acc = [select Id,Name from Account];
+map<Id,string> map1 = new map<Id,string>();
+set<Id>accset = new set<Id>();
+for(Account acclist:acc){
+    accset.add(acclist.Id);
+}
+system.debug(accset);
+List<string> accName = new List<string>();
+for(Account acclist:acc){
+    accName.add(acclist.Name);
+}
+system.debug(accName);
+map1.put(accset,accName);
+system.debug(map1);
+List<Contact> conlis = new List<Contact>();
+for(Contact conacc:[select Id,LastName from Contact where AccountId In:accset]){
+  system.debug(conlis.Id); 
+}
+update conlist;
+
+Account a = new Account(
+   Name='Acme', 
+   BillingCity='New York'
+);
+    map<integer,Account> map1= new map<integer,Account>();
+    map1.put(1,a);
+    map<integer,Account> map2 = new map<integer,Account>();
+    map2=map1.deepClone();
+map1.get(1).BillingCity='San Francisco';
+system.debug(map1);
+system.debug(map2);

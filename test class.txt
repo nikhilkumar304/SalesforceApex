@@ -1,0 +1,130 @@
+---------------first example----------------------
+public class testClass {
+    
+    public static void method1(Account acc){
+        if(acc.Name == 'Shubham Kumar'){
+            acc.Phone='90289272';
+            update acc;
+            system.debug('method 1');
+        }
+    }
+    
+     public static void method2(List<Account> acc){
+        if(acc.size()>0){
+            system.debug('method 2');
+        }
+    }
+}
+
+test class---
+@isTest
+public class testClassTest{
+    
+     @testSetUp public static void datasetup(){
+          Account ac = new Account(Name='Test Account 1');
+         insert ac;
+    }
+    @isTest static void Function1(){
+        Account ac = [select Id,Name from Account where name ='Test Account 1'];
+        testClass.method1(ac);
+        List<Account> acc = new List<Account>([select Id ,Name from account limit 5]);
+        testClass.method2(acc);
+    }
+}
+------------------second example ----------------------------
+public class testClass {
+    
+    public static Boolean method1(string Leadstring){
+        if(string.isEmpty(Leadstring) || Leadstring.length()>2){
+            return null;
+          }
+        boolean testMember ;
+        if(Leadstring == 'CA'){
+            testMember = True;
+        }else{
+            testMember = false;
+        }
+       
+        return testMember;
+    }
+}
+test class---------
+@isTest
+public class testClassTest{
+    
+    @isTest static void Function1(){
+       Boolean Res = testClass.method1('CA');
+        system.assertEquals(True,Res);
+    }
+    @isTest static void Function2(){
+       Boolean Res = testClass.method1('NY');
+        system.assertEquals(false,Res);
+    }
+    @isTest static void Function3(){
+       Boolean Res = testClass.method1('');
+        system.assertEquals(null,Res);
+    }
+     @isTest static void Function4(){
+       Boolean Res = testClass.method1('Delhi');
+        system.assertEquals(null,Res);
+    }   
+}
+--------------------- Third Example-----------------------------
+public class testClass {
+    public static decimal method1(decimal Celsius){
+      decimal Farenheit = (Celsius + 32)*5/9;
+        return Farenheit;
+    }
+}
+test class---------
+@isTest
+public class testClassTest{
+    @isTest static void Function1(){
+       decimal Res = testClass.method1(5);
+        system.assertNotEquals(22.7777778, res);
+    }
+    @isTest static void Function2(){
+       decimal Res = testClass.method1(12);
+        system.assertNotEquals(29.7777778, res);
+    }
+    @isTest static void Function3(){
+       decimal Res = testClass.method1(75);
+        system.assertNotEquals(92.7777778, res);
+    }
+   
+     
+}
+-----------------------Fourth Example -------------------------
+public class testClass {
+    
+    public static decimal areaOfRectangle(Integer Length,Integer Breadth){
+      return (Length*Breadth);
+    }
+    public static decimal areaOfSquare(Integer Side){
+      return (Side*Side);
+    }
+    
+}
+test class----------
+@isTest
+public class testClassTest{
+    @isTest static void Function1(){
+        decimal Res = testClass.areaOfRectangle(2,3);
+        system.assertEquals(6, res);
+        decimal Resu = testClass.areaOfRectangle(10,13);
+        system.assertEquals(130, resu);
+        decimal Result = testClass.areaOfRectangle(20,40);
+        system.assertEquals(800, result);
+    }
+    @isTest static void Function2(){
+       decimal Res = testClass.areaOfSquare(6);
+       system.assertEquals(36, res);
+       decimal Resu = testClass.areaOfSquare(16);
+       system.assertEquals(256, resu); 
+       decimal Result = testClass.areaOfSquare(79);
+       system.assertEquals(6241, result);
+    }
+   
+   
+     
+}

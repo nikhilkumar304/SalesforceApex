@@ -1,0 +1,219 @@
+public class CollectionCode {
+    public CollectionCode(){
+      List<Contact> list1 = new List<Contact>([select Id,Name from Contact limit 4]);
+      List<List<Contact>> listinlist = new List<List<Contact>>();
+        listinlist.add(list1);
+      system.debug('values'+list1);
+      system.debug(listinlist);
+        set<Id> Ids = new set<Id>();
+        for(List<Contact> con :listinlist){
+            for(Contact Cn : con){
+              system.debug(Cn); 
+                Ids.add(Cn.Id);
+            }  
+        }
+        system.debug(Ids);
+       List<Contact> CollectedCon = getContacts(Ids);
+       List<string> NameSet = new List<string>();
+        for(Contact Cn : CollectedCon){
+            system.debug('newCon'+Cn.Name);
+            NameSet.add(Cn.Name);
+        }
+        system.debug('Names'+NameSet);
+        for(Contact Cn : CollectedCon){
+            if(Cn.Name.equals(NameSet[0])){
+                Cn.Phone='9990099';
+            }else if(Cn.Name.equals(NameSet[1])){
+                Cn.Phone='7654301';
+            }
+        }
+        update CollectedCon;
+        for(Contact c : CollectedCon){
+            system.debug('ccc'+c);
+        }
+    }
+      
+    public List<Contact> getContacts(set<Id> Ids){
+        List<Contact> getCon = new List<Contact>([select Id , Name from Contact where Id IN :Ids limit 2]);
+        for(Contact Con : getCon){
+          system.debug('Con'+Con);  
+        }
+        return getCon;
+    }
+}
+
+---------------------------------------------------------------------------------------------------------------------
+public class CollectionCode {
+    public CollectionCode(){
+      List<Account> list1 = new List<Account>([select Id,Name from Account limit 4]);
+      List<List<Account>> listinlist = new List<List<Account>>();
+        listinlist.add(list1);
+      system.debug('values'+list1);
+      system.debug(listinlist);
+        set<Id> Ids = new set<Id>();
+        for(List<Account> con :listinlist){
+            for(Account Cn : con){
+              system.debug(Cn); 
+                Ids.add(Cn.Id);
+            }  
+        }
+        system.debug(Ids);
+    
+       List<Account> CollectedCon = getAccounts(Ids);
+       List<string> NameSet = new List<string>();
+        for(Account Cn : CollectedCon){
+            system.debug('newCon'+Cn.Name);
+            NameSet.add(Cn.Name);
+        }
+        system.debug('Names'+NameSet);
+        for(Account Cn : CollectedCon){
+            if(Cn.Name.equals(NameSet[0])){
+                Cn.Phone='9990099';
+            }else if(Cn.Name.equals(NameSet[1])){
+                Cn.Phone='7654301';
+            }
+        }
+        update CollectedCon;
+        for(Account c : CollectedCon){
+            system.debug('ccc'+c);
+        }
+       
+  }
+      
+    public List<Account> getAccounts(set<Id> Ids){
+        List<Account> getCon = new List<Account>([select Id , Name from Account where Id IN :Ids limit 2]);
+        for(Account Con : getCon){
+          system.debug('Acc'+Con);  
+        }
+        return getCon;
+    }
+
+}
+--------------------------------------------------------------------------------------------------------------
+public class CollectionCode {
+    
+public List<integer> Phone = new List<integer>{99999,88888,77777};
+    
+public List<string> names = new List<string>();
+    
+public List<Account> Appcino = new List<Account>();
+    
+public List<Account> Appian = new List<Account>();
+    
+public List<Account> Xebia = new List<Account>();
+    
+public List<string> NameSet = new List<string>();
+    
+    
+public CollectionCode(){
+      List<Opportunity> list1 = new List<Opportunity>([select Id,Name from Opportunity limit 4]);
+      List<List<Opportunity>> listinlist = new List<List<Opportunity>>();
+      listinlist.add(list1);
+      system.debug('values'+list1);
+      system.debug(listinlist);
+        set<Id> Ids = new set<Id>();
+        for(List<Opportunity> con :listinlist){
+            for(Opportunity Cn : con){
+              system.debug(Cn); 
+                Ids.add(Cn.Id);
+            }  
+        }
+        system.debug(Ids);
+    
+       List<Opportunity> CollectedCon = getAccounts(Ids);
+      
+        for(Opportunity Cn : CollectedCon){
+            system.debug('newCon'+Cn.Name);
+            NameSet.add(Cn.Name);
+        }
+        system.debug('Names'+NameSet);
+        for(Opportunity Cn : CollectedCon){
+            if(Cn.Name.equals(NameSet[0])){
+                Cn.StageName='Prospecting';
+            }else if(Cn.Name.equals(NameSet[1])){
+                Cn.StageName='Closed Won';
+            }
+        }
+        update CollectedCon;
+        for(Opportunity c : CollectedCon){
+            system.debug('ccc'+c);
+        }
+       map<string,List<Account>> maps = createAccount(NameSet,Appcino,Appian,Xebia,Phone);
+       
+  }
+      
+    public List<Opportunity> getAccounts(set<Id> Ids){
+        List<Opportunity> getCon = new List<Opportunity>([select Id , Name from Opportunity where Id IN :Ids limit 2]);
+        for(Opportunity Con : getCon){
+          system.debug('Acc'+Con);  
+        }
+        return getCon;
+    }
+public static map<string,List<Account>> CreateAccount(List<string> NameSet,List<Account> Appcino,List<Account> Appian ,List<Account> Xebia , List<integer> Phone ){
+    
+List<Account> acclist = new List<Account>();
+    
+for(integer i =0;i<NameSet.size();i++){
+    acclist.add(new Account(Name=NameSet[i]+'1'));
+    acclist.add(new Account(Name=NameSet[i]+'2'));
+}
+insert acclist;
+
+system.debug('list of Account'+acclist);
+//soql----------------
+
+List<string> names = new List<string>();
+    
+for(account ac:acclist){
+    names.add(ac.Name);
+}
+    
+system.debug(names);
+    
+List<Account> createdAcc = new List<Account>([select Name from Account where Name IN :names]);
+    
+system.debug(createdAcc);
+
+for(integer i=0;i<acclist.size();i++){
+    if(acclist[i].Name =='Appcino1'|| acclist[i].Name =='Appcino2'){
+        acclist[i].phone=''+Phone[0];
+        Appcino.add(acclist[i]);
+    }else if(acclist[i].Name =='Appian1' || acclist[i].Name =='Appian2'){
+        acclist[i].phone=''+Phone[1];
+        Appian.add(acclist[i]);
+    }else if(acclist[i].Name =='Xebia1' || acclist[i].Name =='Xebia2'){
+        acclist[i].phone=''+Phone[2];
+        Xebia.add(acclist[i]);
+    }
+}
+update acclist;
+    
+system.debug(acclist);
+    
+system.debug(Appcino);
+    
+system.debug(Appian);
+    
+system.debug(Xebia);
+    
+map<string,List<Account>> maplist = new map<string,List<Account>>();
+    
+for(integer i =0;i<NameSet.size();i++){
+    if(NameSet[i]=='Appcino'){
+      maplist.put(NameSet[i],Appcino);   
+    }
+    else if(NameSet[i]=='Appian'){
+         maplist.put(NameSet[i],Appian); 
+    }
+    else{
+         maplist.put(NameSet[i],Xebia);
+    }  
+}
+system.debug(maplist);
+return maplist;
+    }
+
+}
+
+
+

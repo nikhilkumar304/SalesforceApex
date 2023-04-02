@@ -1,0 +1,60 @@
+public class JsonToClass {
+
+ public List<Location_suggestions> location_suggestions;
+ public String status;
+ public Integer has_more;
+ public Integer has_total;
+
+ public class Location_suggestions {
+  public String entity_type;
+  public Integer entity_id;
+  public String title;
+  public Double latitude;
+  public Double longitude;
+  public Integer city_id;
+  public String city_name;
+  public Integer country_id;
+  public String country_name;
+ }
+
+ 
+ public static JsonToClass parse(String json) {
+  return (JsonToClass) System.JSON.deserialize(json, JsonToClass.class);
+ }
+}
+
+string json=' { "location_suggestions": [ { "entity_type": "city", "entity_id": 6, "title": "Hyderabad",  "latitude": 17.366, "longitude": 78.476, "city_id": 6, "city_name": "Hyderabad", "country_id": 1, "country_name": "India" } ],  "status": "success", "has_more": 0, "has_total": 0 }';
+system.debug(JsonToClass.parse(json));
+
+example-2:
+public class JsonToClass {
+    public String name;
+    public Integer age;
+    public Address address;
+    public List<PhoneNumbers> phoneNumbers;
+    public class Address {
+        public String street;
+        public String city;
+        public String state;
+        public String zip;
+    }
+    public class PhoneNumbers {
+        public String type;
+        public String mobNo;
+    }
+    public static JsonToClass parse(string json){
+        return (JsonToClass) system.JSON.deserialize(json,JsonToClass.class);
+    }
+}
+
+string json='{ "name": "John Doe", "age": 35, "address": { "street": "123 Main St",  "city": "Anytown", "state": "CA", "zip": "12345" }, "phoneNumbers": [ { "type": "home", "mobNo": "555-555-1234" }, { "type": "work",  "mobNo": "555-555-5678" } ] }';
+system.debug(JsonToClass.parse(json));
+
+output--JsonToClass:[address=Address:[city=Anytown, state=CA, street=123 Main St, zip=12345], age=35, name=John Doe, phoneNumbers=(PhoneNumbers:[mobNo=555-555-1234, type=home], PhoneNumbers:[mobNo=555-555-5678, type=work])]
+
+Example 3--
+string json = '{"LastName":"kumar","FirstName":"Nikhil"}';
+contact con = (contact)system.JSON.deserialize(json, contact.class);
+system.debug(con);
+
+oytput--contact(FirstName=Nikhil,LastName=kumar)

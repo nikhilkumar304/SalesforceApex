@@ -1,0 +1,61 @@
+SELECT ID, Name, Industry, (SELECT ID, Name, FirstName, LastName FROM Contacts)FROM Account WHERE ID IN (SELECT AccountID
+FROM Contact)
+
+SELECT ID,Name ,Type,(SELECT ID,Name,StageName from Opportunities Where StageName = 'Hot') FROM Account 
+
+select Id,Name,(select LastName from Contact) from Account where Phone='123456'
+ 
+/// Use of limt, offset , order by together
+
+Select Id, Name, (Select Id, Name From Contacts) from Account where ORDER BY Name DESC Limit 4 Offset 3
+
+ 
+SELECT ID, Name, FirstName, LastName FROM Contact WHERE AccountID = null
+
+// Select those accounts those which dont contain any contact
+
+Select Id, Name from Account where Id Not In (Select AccountId from Contact)
+
+Select Id, Name from School__c Where Id NOT IN (Select School__c From Student__c)
+______________________________________________________________________________________________________________
+public class studentClass {
+        ////custom relationship
+
+    //1) Parent to child
+      public static void method(){
+          
+         List<School__c> schlist= new List<School__c>([Select Name, City__c,(Select Id, Fee__c, class__c from Students__r) from School__c]);
+       system.debug(schlist);
+          
+       //// Child to Parent
+         List<Student__c> stulist= new List<Student__c>([Select Id, Fee__c, class__c,School__r.Name,School__r.City__c from Student__c ]);
+       system.debug(stulist);
+    
+       ///use of like
+         List<Student__c>schlist2= new List<Student__c>([Select Id,Name, Fee__c from Student__c where Name like'A%' Or Name like'N%']);
+       system.debug(schlist2);
+            
+       // use of aggregate function
+       // use of count And Sum
+          AggregateResult[] totalfee= [Select Sum(Fee__c) from Student__c];
+          system.debug(totalfee);
+          
+          integer totalfee1= (integer)[Select Sum(Fee__c) from Student__c][0].get('expr0');
+          system.debug(totalfee1);
+          
+          AggregateResult[] totalFee2=[select Count(Id), Count(Name) from Account];
+          System.debug(totalFee2);
+          Integer a = (integer)totalFee2[0].get('expr'+0);
+          Integer b = (integer)totalFee2[0].get('expr'+1);
+          //system.debug(a);
+          //system.debug(b);
+          
+        //use of group by
+         AggregateResult[] totalFee3=[Select SUM(AnnualRevenue) from Account group by Industry];
+          System.debug(totalFee3); 
+      }
+}
+
+ 
+   
+

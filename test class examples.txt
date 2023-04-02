@@ -1,0 +1,182 @@
+@isTest
+public class AccountControllerTest {
+    @testsetup public static void dataset(){
+          List<Account> acclist = new List<Account>{new Account(Name='Nikhil',Phone='938292'),new Account(Name='Nishant',Phone='938292'),new Account(Name='Ashutosh',Phone='938292'),new Account(Name='Yash',Phone='938292'),new Account(Name='Vinayak',Phone='938292')};
+          insert acclist; 
+          List<contact> conlist = new List<contact>();
+          List<Account> accounts = [select Id,Name,Phone from Account where Name IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+          for(Account ac : accounts){
+            conlist.add(new Contact(LastName=ac.Name,AccountId=ac.Id,Phone=ac.Phone));
+          }
+          insert conlist;
+    }
+    @isTest static void CheckSaveAccount(){
+         List<Account> accounts =[select Name,Phone from Account where Name IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+          List<Account> acclist1=AccountController.saveAccounts(accounts);
+         // system.debug('size of list'+acclist1.size());
+          system.assertEquals(5, acclist1.size());      
+    } 
+    @istest static void findContactByAccountId(){
+         List<Account> accounts =[select Id,Name,Phone from Account where Name IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+         List<Contact> conlist;
+        for(integer i=0;i<accounts.size();i++){
+          conlist = AccountController.findContactByAccountId(accounts[i].Id); 
+        }
+        //system.debug('con'+conlist.size());
+        system.assertEquals(2, conlist.size());
+    }
+    @istest static void findOpportunityByAccountId(){
+         List<Account> accounts =[select Id,Name,Phone from Account where Name IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+        List<Opportunity> opplist;
+        for(integer i=0;i<accounts.size();i++){
+          opplist = AccountController.findOpportunityByAccountId(accounts[i].Id); 
+        }
+        //system.debug('oppo'+opplist.size());
+        system.assertNotEquals(1, opplist.size());
+    }
+    @istest static void getAccounts(){
+        List<Account> acc = AccountController.getAccounts();
+        //system.debug(acc.size());
+        system.assertEquals(5,acc.size());
+    }
+    @istest static void getAccount(){
+        List<Account> acc = AccountController.getAccount();
+        //system.debug('Size of acc'+acc.size());
+        system.assertEquals(5,acc.size());
+    }
+    
+    @istest static void saveContacts1(){
+        List<Account> accounts = [select Id,Name,Phone from Account where Name IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+        List<contact> contacts = [select Id,LastName ,Phone from Contact where LastName IN ('Nikhil','Nishant','Ashutosh','Yash','Vinayak')];
+        List<contact> conlist;
+        for(Account ac : accounts){
+          conlist=AccountController.saveContacts1(contacts, ac.Id);  
+        }
+        system.debug('contact list'+conlist); 
+    }
+    
+    @istest static void accountGet(){
+        List<string> names = new List<string>{'Nikhil','Ashutosh','NIshant','Yash','Vinayak'};
+             List<Account> acclist ;
+            for(string name : names){
+            acclist = AccountController.accountGet(name);  
+            }
+           system.debug(acclist);
+    }
+     
+      
+}
+___________________________________________________________________________________________________________
+trigger trgMnUpdateContactFieldsFromUserTable on Contact (before update, before insert) {
+
+    Set<Id> userIds = new Set<Id>();
+    for (Contact a : Trigger.new)
+        userIds.add(a.OwnerId);
+    
+    // Query the User table for the associated fields you need and place in a map.
+    Map<Id, User> fields = new Map<Id, User>([select Name, User_Region__c from User where id in :userIds]);
+    
+    // Now use the map to set the appropriate fields on every Account processed by the trigger.
+    for (Contact a : Trigger.new) {
+        
+        // OWNER NAME FROM USER TO ACCOUNT
+        a.Owner_name_txt__c = fields.get(a.OwnerId).Name;
+
+        // OWNER REGION FROM USER TO ACCOUNT
+        a.Owner_region__c = fields.get(a.OwnerId).User_Region__c;
+
+    }    
+}
+--------test class-------------
+  @isTest
+       private class sampleTestClass
+        {
+          public static testMethod void testocc()
+             {
+               User u = [select name,Id,User_Region_c,profileId=:[select Id from profile where name='system administrator'].Id  limit 1];
+               system.runAs(u)
+                   {
+                     Account acc = new Account(name = "testaccount");
+                     insert acc;
+                     Contact con = new Contact(AccountId = acc.id,lastname = "testdata" , firstname ="testdata1",OwnerId = Userinfo.getUserid(),Owner_name_txt__c = “textdata”, Owner_region__c = "testregion");
+                     insert con;
+                   }
+             }
+       }
+___________________________________________________________________________________________________________________________
+public class TriggerAccountClass {
+    public static void CopyBillingToShipping(List<Account> acclist){
+        for(Account acc : acclist){
+            if(acc.CopyBillingToShipping_C__c){
+                acc.ShippingCity=acc.BillingCity;
+                acc.ShippingCountry=acc.BillingCountry;
+                acc.ShippingPostalCode=acc.BillingPostalCode;
+                acc.ShippingState=acc.BillingState;
+                acc.ShippingStreet=acc.BillingStreet;
+            }
+        }
+    }
+}
+-------trigger  --------------
+trigger TriggerAccountHandlerTest on Account (before insert,After insert , before update, After update) {
+    if(Trigger.isInsert){
+        if(Trigger.isBefore){
+            TriggerAccountClass.CopyBillingToShipping(Trigger.new);
+        }
+    }
+    if(Trigger.isUpdate){
+        
+        if(Trigger.isBefore){
+            TriggerAccountClass.CopyBillingToShipping(Trigger.new);
+        }
+    }
+}
+--------------test class ----------------
+@istest
+public class TestTriggerAccountHAndler {
+    @istest static void CopyBillingToShippingMethod(){
+        List<Account> acclist = new List<Account>();
+        for(integer i=0;i<=2;i++){
+            Account acc = new Account();
+            acc.Name='Testing tigger test';
+            acc.BillingCity='Firozabad';
+            acc.BillingCountry='India';
+            acc.BillingState='Uttar Pradesh';
+            acc.BillingPostalCode='283203';
+            acc.BillingStreet='113 badi Chappeti';
+            acc.CopyBillingToShipping_C__c = true;
+            acclist.add(acc);
+        }
+      
+        Test.startTest();
+        insert acclist;
+        Test.stopTest();
+        
+        Account updated = [SELECT ShippingCity FROM Account WHERE Id =: acclist[0].Id];
+        system.assertEquals(acclist[0].BillingCity,updated.ShippingCity);
+    }
+     @istest static void CopyBillingToShippingMethod1(){
+        List<Account> acclist = new List<Account>();
+        for(integer i=0;i<=2;i++){
+            Account acc = new Account();
+            acc.Name='Testing tigger test';
+            acc.BillingCity='Firozabad';
+            acc.BillingCountry='India';
+            acc.BillingState='Uttar Pradesh';
+            acc.BillingPostalCode='283203';
+            acc.BillingStreet='113 badi Chappeti';
+            acclist.add(acc);
+        }
+      
+        Test.startTest();
+        insert acclist;
+        for(integer i=0;i<=2;i++){
+            acclist[i].CopyBillingToShipping_C__c = true;
+        }
+        update acclist;
+        Test.stopTest();
+        
+        Account updated = [SELECT ShippingCity FROM Account WHERE Id =: acclist[0].Id];
+        system.assertEquals(acclist[0].BillingCity,updated.ShippingCity);
+    }
+}
